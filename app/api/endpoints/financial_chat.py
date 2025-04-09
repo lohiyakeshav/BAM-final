@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-from ...services.financial_chat_service import get_financial_advice
-from ...models.schemas import ChatResponse
-from ...dependencies.auth import get_current_user
-from ...database.models import User
+from app.services.financial_chat_service import get_financial_advice
+from app.models.schemas import ChatResponse
+from app.dependencies.auth import get_current_user
+from app.database.models import User
 
 router = APIRouter()
 
@@ -13,11 +13,11 @@ class ChatRequest(BaseModel):
     query: str
     user_id: Optional[int] = None
 
-@router.post("/chat", response_model=ChatResponse)
-async def chat_with_financial_advisor(
+@router.post("", response_model=ChatResponse)
+async def chat_endpoint(
     request: ChatRequest,
     current_user: User = Depends(get_current_user)
-):
+) -> ChatResponse:
     """
     Chat with a financial advisor AI agent.
     
@@ -39,6 +39,7 @@ async def chat_with_financial_advisor(
         request.user_id = current_user.id
         return await get_financial_advice(request.query, request.user_id)
     except Exception as e:
+        print(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Error processing your query: {str(e)}"

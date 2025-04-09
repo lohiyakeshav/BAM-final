@@ -4,8 +4,8 @@
  * This service provides methods to fetch financial data from Yahoo Finance API
  */
 
-// Base URL for Yahoo Finance API
-const BASE_URL = 'https://query1.finance.yahoo.com/v8/finance';
+// Base URL for Yahoo Finance API from environment variables or default
+const FINANCE_API_URL = import.meta.env.VITE_FINANCE_API_URL || 'https://query1.finance.yahoo.com/v8/finance';
 
 // Types
 export interface StockQuote {
@@ -36,7 +36,7 @@ export interface MarketSummary {
  */
 export const getStockQuote = async (symbol: string): Promise<StockQuote | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/chart/${symbol}`);
+    const response = await fetch(`${FINANCE_API_URL}/chart/${symbol}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch data for ${symbol}`);
@@ -68,7 +68,7 @@ export const getStockQuote = async (symbol: string): Promise<StockQuote | null> 
  */
 export const getMarketSummary = async (): Promise<MarketSummary | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/market/get-summary`);
+    const response = await fetch(`${FINANCE_API_URL}/market/get-summary`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch market summary');
@@ -99,7 +99,7 @@ export const getMarketSummary = async (): Promise<MarketSummary | null> => {
  */
 export const searchFinancialInstruments = async (query: string): Promise<any[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/autocomplete?query=${encodeURIComponent(query)}`);
+    const response = await fetch(`${FINANCE_API_URL}/autocomplete?query=${encodeURIComponent(query)}`);
     
     if (!response.ok) {
       throw new Error('Failed to search for financial instruments');
@@ -122,7 +122,7 @@ export const getHistoricalData = async (
   range: '1d' | '5d' | '1mo' | '3mo' | '6mo' | '1y' | '5y' = '1mo'
 ): Promise<any | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/chart/${symbol}?interval=${interval}&range=${range}`);
+    const response = await fetch(`${FINANCE_API_URL}/chart/${symbol}?interval=${interval}&range=${range}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch historical data for ${symbol}`);

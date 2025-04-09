@@ -1,22 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.database.connection import get_db
 from app.schemas.portfolio import PortfolioCreate, PortfolioResponse
 from app.services.portfolio_service import (
     create_portfolio,
     get_user_portfolios,
-    get_latest_portfolio
+    get_latest_portfolio,
+    get_portfolio_by_id, 
+    update_portfolio,
+    delete_portfolio
 )
 from app.dependencies.auth import get_current_user
 from app.database.models import User
 
-router = APIRouter(
-    prefix="/portfolios",
-    tags=["Portfolios"],
-    responses={404: {"description": "Not found"}},
-)
+router = APIRouter()
 
 @router.post("", response_model=PortfolioResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_portfolio(
@@ -28,26 +27,29 @@ async def create_user_portfolio(
     return create_portfolio(db, portfolio, current_user.id)
 
 @router.get("", response_model=List[PortfolioResponse])
-async def get_my_portfolios(
+async def get_portfolios(
+    current: bool = Query(False, description="Get only the latest portfolio"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all portfolios for the current user"""
-    return get_user_portfolios(db, current_user.id)
-
-@router.get("/current", response_model=PortfolioResponse)
-async def get_current_portfolio(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get the current user's latest portfolio"""
-    portfolio = get_latest_portfolio(db, current_user.id)
-    if not portfolio:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No portfolio found for current user"
-        )
-    return portfolio
+    """
+    Get user portfolios with filtering options
+    
+    - If current=True, returns only the latest portfolio
+    - Otherwise, returns all portfolios for the current user
+    """
+    if current:
+        # Get only the latest portfolio
+        portfolio = get_latest_portfolio(db, current_user.id)
+        if not portfolio:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No portfolio found for current user"
+            )
+        return [portfolio]  # Return as a list with one item to match response model
+    else:
+        # Get all portfolios
+        return get_user_portfolios(db, current_user.id)
 
 @router.get("/{portfolio_id}", response_model=PortfolioResponse)
 async def get_portfolio(

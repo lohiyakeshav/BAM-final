@@ -8,6 +8,10 @@ export interface Message {
   content: string;
   sender: "user" | "bot";
   timestamp: Date;
+  // Additional fields for rich financial responses
+  recommendations?: string[];
+  supporting_data?: string[];
+  sources?: string[];
 }
 
 // Context interface

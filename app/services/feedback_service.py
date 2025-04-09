@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from datetime import datetime
 
 from app.database.models import Feedback
 from app.schemas.feedback import FeedbackCreate
@@ -15,6 +16,7 @@ def create_feedback(db: Session, feedback: FeedbackCreate, user_id: int):
     db_feedback = Feedback(
         user_id=user_id,
         feedback_description=feedback.feedback_description,
+        created_at=datetime.now()
         # report_id=feedback.report_id
     )
     

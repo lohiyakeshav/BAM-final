@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.main import router as api_router
+from app.api.main import router as api_router, periodic_news_update
 import asyncio
 from app.services.news_service import update_news_cache
 from datetime import datetime
@@ -48,15 +48,6 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     print("Shutting down...")
-
-async def periodic_news_update():
-    while True:
-        try:
-            await update_news_cache()
-            print(f"News cache updated at {datetime.now()}")
-        except Exception as e:
-            print(f"Error in periodic news update: {str(e)}")
-        await asyncio.sleep(600)  # Sleep for 10 minutes
 
 if __name__ == "__main__":
     import uvicorn

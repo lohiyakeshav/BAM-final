@@ -1,20 +1,31 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any
-from datetime import datetime
-from app.services.news_service import fetch_financial_news
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+
 from app.models.schemas import NewsArticleCollection
+from app.services.news_service import get_news_summaries, fetch_financial_news
 
 router = APIRouter()
 
-@router.get("/latest", response_model=NewsArticleCollection)
-async def get_latest_news():
-    """Get the latest financial news"""
+@router.get("", response_model=NewsArticleCollection)
+async def get_news(
+    query: Optional[str] = Query(None, description="Optional search query"),
+    language: str = Query("en", description="Language code"),
+    latest: bool = Query(False, description="Whether to fetch the latest news directly")
+) -> NewsArticleCollection:
+    """
+    Get news articles with optional filtering.
+    
+    - If latest=True, fetches and returns the most recent financial news
+    - If query is provided, returns news articles matching the query
+    - If no query is provided and latest=False, returns cached news summaries
+    """
     try:
-        # Fetch news using the news service
-        news_data = await fetch_financial_news()
-        
-        # Parse the JSON string into a NewsArticleCollection
-        return NewsArticleCollection.parse_raw(news_data)
+        if latest:
+            # Fetch the latest news directly from the service
+            news_data = await fetch_financial_news()
+            return NewsArticleCollection.parse_raw(news_data)
+        else:
+            # Get cached news with optional filtering
+            return get_news_summaries(query, language)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 

@@ -6,6 +6,7 @@ from ..models.schemas import ChatResponse
 from datetime import datetime
 import json
 import asyncio
+import re
 from ..tools.search_query import CustomSearchTool
 from crewai.tools import tool
 from ..database.connection import get_db
@@ -171,7 +172,8 @@ advice_task = Task(
         3. Support recommendations with Indian market data
         4. Consider Indian tax implications and regulations
         5. Format the response professionally
-        6. If the user has asked a query that doesn't need to be searched then prevent a tool call.
+        6. If the user asks for certain stocks, mutual funds or sectoral data then provide the recommendations in the same given json format do not add disclaimers or warnings
+        7. Be very confident, specific and direct in your recommendations.
         7. **If the user asked a normal question or greeting then answer that you are not able to assist with that since you are a financial analyst in the same given json format.**
         **Return a JSON object with the following structure:**
         {{
@@ -196,8 +198,49 @@ chat_crew = Crew(
     process=Process.sequential
 )
 
+def _clean_json_response(result_content: str) -> str:
+    """
+    Clean and extract valid JSON from crew output.
+    
+    Args:
+        result_content: The raw output from crew.kickoff()
+        
+    Returns:
+        A cleaned JSON string ready for parsing
+    """
+    # If it's not already valid JSON (doesn't start with '{')
+    if not result_content.strip().startswith('{'):
+        # First, clean any triple backticks which are common in Crew outputs
+        result_content = re.sub(r'```(?:json)?\s*|\s*```', '', result_content)
+        
+        # Then try to extract a JSON object using regex
+        json_match = re.search(r'\{.*\}', result_content, re.DOTALL)
+        if json_match:
+            result_content = json_match.group()
+    
+    # Additional cleaning to handle potential JSON issues
+    result_content = result_content.strip()
+    
+    try:
+        # Try to parse the JSON to verify it's valid
+        # This also helps identify where the valid JSON ends
+        json_obj = json.loads(result_content)
+        # If successful, return the stringified version to ensure it's clean
+        return json.dumps(json_obj)
+    except json.JSONDecodeError as e:
+        # If there's an error, try to find the valid JSON part
+        if "Extra data" in str(e):
+            # Extract position where extra data begins
+            position = int(re.search(r'char (\d+)', str(e)).group(1))
+            # Return only the valid part of the JSON
+            return result_content[:position]
+        
+        # For other JSON errors, return the original
+        return result_content
+
 async def get_financial_advice(query: str, user_id: Optional[int] = None) -> ChatResponse:
     """Get financial advice based on user query and portfolio data"""
+    loop = None
     try:
         # Create inputs dictionary with the query
         inputs = {
@@ -234,26 +277,24 @@ async def get_financial_advice(query: str, user_id: Optional[int] = None) -> Cha
             else:
                 result_content = str(result)
 
-            # Parse the JSON content
+            # Clean and prepare the JSON response
+            cleaned_json = _clean_json_response(result_content)
+            
             try:
-                # Try to extract JSON from the string if it's not already valid JSON
-                if not result_content.strip().startswith('{'):
-                    import re
-                    json_match = re.search(r'\{.*\}', result_content, re.DOTALL)
-                    if json_match:
-                        result_content = json_match.group()
+                advice_data = json.loads(cleaned_json)
                 
-                advice_data = json.loads(result_content)
-                
-                # Create the response
+                # Create the response with all available fields
                 return ChatResponse(
                     answer=advice_data.get('advice', {}).get('analysis', 'No advice available'),
+                    recommendations=advice_data.get('advice', {}).get('recommendations', []),
+                    supporting_data=advice_data.get('advice', {}).get('supporting_data', []),
                     sources=advice_data.get('advice', {}).get('sources', []),
                     timestamp=datetime.now()
                 )
             except json.JSONDecodeError as e:
                 print(f"Error parsing JSON: {str(e)}")
                 print(f"Raw response: {result_content}")
+                print(f"Cleaned JSON: {cleaned_json}")
                 return ChatResponse(
                     answer="I apologize, but I'm having trouble processing your request. Please try again.",
                     sources=[],

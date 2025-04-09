@@ -17,6 +17,7 @@ from ..database.models import Feedback
 from ..database.connection import get_db
 from dotenv import load_dotenv
 import google.generativeai as genai
+import re
 
 # Load environment variables
 load_dotenv()
@@ -113,6 +114,8 @@ risk_analysis_task = Task(
         7. Provide risk management recommendations
         
         8. Suggest risk mitigation strategies
+
+        9. Be very confident, specific and direct in your analysis
         
         Return a JSON object with the following structure:
         {{
@@ -166,6 +169,10 @@ analyze_news_task = Task(
                 }}
             }}
         }}
+        
+        Note: The field structure of market_trends, key_insights, and impact_analysis should be
+        an array of strings (not objects/dictionaries), and sector_performance should be an 
+        object with sector names as keys and performance descriptions as values.
     """,
     expected_output="JSON formatted market analysis with trends, insights, and impact analysis",
     agent=news_analyzer
@@ -187,6 +194,8 @@ recommend_investments_task = Task(
         - Debt obligations and repayment strategy
         - Emergency fund status
         - Insurance coverage adequacy
+        - User's risk profile
+        - User's investment goals
         
         For each recommended investment, provide:
         1. Expected return range based on historical data and current market conditions
@@ -202,6 +211,9 @@ recommend_investments_task = Task(
         4. Portfolio monitoring guidelines
         5. Contingency plans for market downturns
         
+        ** Be mindful of the user's risk profile and market news and provide the recommendations accordingly. Don't be too rigid with the asset allocation and diversification. **
+        **Be realistic with the portfolio recommendations and projections, for example if the user cannot afford a real estate investment then don't recommend it but if REITS are affordable then recommend it.**
+
         Return a JSON object with the following structure:
         {{
             "risk_analysis": {{"The same risk analysis data as provided in the input"}}
@@ -320,11 +332,37 @@ def _prepare_news_data(news_articles: List[Any]) -> str:
     # Convert to JSON string
     return json.dumps({"articles": articles_data})
 
+def _clean_json_response(result_content: str) -> str:
+    """
+    Clean and extract valid JSON from crew output.
+    
+    Args:
+        result_content: The raw output from crew.kickoff()
+        
+    Returns:
+        A cleaned JSON string ready for parsing
+    """
+    # If it's not already valid JSON (doesn't start with '{')
+    if not result_content.strip().startswith('{'):
+        # First, clean any triple backticks which are common in Crew outputs
+        result_content = re.sub(r'```(?:json)?\s*|\s*```', '', result_content)
+        
+        # Then try to extract a JSON object using regex
+        json_match = re.search(r'\{.*\}', result_content, re.DOTALL)
+        if json_match:
+            result_content = json_match.group()
+    
+    # Additional cleaning to handle potential JSON issues
+    result_content = result_content.strip()
+    
+    return result_content
+
 async def get_wealth_management_advice(
     user_profile: UserProfile,
     market_news: Optional[NewsArticleCollection] = None
 ) -> WealthManagementResponse:
     """Get personalized wealth management advice using AI agents"""
+    loop = None
     try:
         # Convert user data to dict and ensure all datetime objects are strings
         user_data_dict = _convert_datetime_to_str(user_profile.dict())
@@ -355,19 +393,16 @@ async def get_wealth_management_advice(
         else:
             result_content = str(result)
 
+        # Clean and prepare the JSON response
+        cleaned_json = _clean_json_response(result_content)
+
         # Parse the JSON content
         try:
-            # Try to extract JSON from the string if it's not already valid JSON
-            if not result_content.strip().startswith('{'):
-                import re
-                json_match = re.search(r'\{.*\}', result_content, re.DOTALL)
-                if json_match:
-                    result_content = json_match.group()
-            
-            recommendations_data = json.loads(result_content)
+            recommendations_data = json.loads(cleaned_json)
         except json.JSONDecodeError as e:
             print(f"Error parsing JSON: {str(e)}")
             print(f"Raw response: {result_content}")
+            print(f"Cleaned JSON: {cleaned_json}")
             # Return default response if parsing fails
             return WealthManagementResponse(
                 risk_analysis={
@@ -380,27 +415,27 @@ async def get_wealth_management_advice(
                     "recommendations": ["Default recommendation"],
                     "risk_mitigation_strategies": ["Default strategy"]
                 },
-                market_analysis={
-                    "market_trends": ["Default trend"],
-                    "key_insights": ["Default insight"],
-                    "impact_analysis": ["Default impact"],
-                    "sector_performance": {
+                market_analysis=MarketAnalysis(
+                    market_trends=["Default market trend"],
+                    key_insights=["Default market insight"],
+                    impact_analysis=["Default market impact"],
+                    sector_performance={
                         "default": "moderate"
                     }
-                },
-                recommendations={
-                    "asset_allocation": {
+                ),
+                recommendations=InvestmentRecommendation(
+                    asset_allocation={
                         "equity": 50,
                         "debt": 30,
                         "gold": 10,
                         "real_estate": 10
                     },
-                    "investment_philosophy": "Default philosophy",
-                    "rebalancing_strategy": "Default strategy",
-                    "tax_efficiency_considerations": ["Default consideration"],
-                    "monitoring_guidelines": ["Default guideline"],
-                    "contingency_plans": ["Default plan"],
-                    "specific_recommendations": [
+                    investment_philosophy="Default investment philosophy",
+                    rebalancing_strategy="Default rebalancing strategy",
+                    tax_efficiency_considerations=["Default tax consideration"],
+                    monitoring_guidelines=["Default monitoring guideline"],
+                    contingency_plans=["Default contingency plan"],
+                    specific_recommendations=[
                         {
                             "type": "equity",
                             "instrument": "Default Fund",
@@ -408,7 +443,7 @@ async def get_wealth_management_advice(
                             "reasoning": "Default reasoning"
                         }
                     ],
-                    "portfolio_projection": {
+                    portfolio_projection={
                         "total_investment": user_profile.income * 0.3,
                         "projected_value": {
                             "min": user_profile.income * 0.3 * 1.5,
@@ -417,7 +452,7 @@ async def get_wealth_management_advice(
                             "confidence_level": "medium"
                         }
                     }
-                }
+                )
             )
 
         # Extract the data from the response

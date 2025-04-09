@@ -4,8 +4,8 @@ from datetime import datetime
 from app.models.schemas import UserProfile, WealthManagementResponse
 
 class PortfolioBase(BaseModel):
-    user_json: Dict[str, Any]  # Will contain UserProfile data
-    portfolio_json: Dict[str, Any]  # Will contain WealthManagementResponse data
+    user_json: Dict[str, Any]  
+    portfolio_json: Dict[str, Any]  
 
 class PortfolioCreate(PortfolioBase):
     pass

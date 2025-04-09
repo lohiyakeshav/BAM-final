@@ -1,14 +1,14 @@
 // API utilities for making requests to the backend
 
-// Base API URL
-export const API_BASE_URL = 'https://7e3d-14-97-189-166.ngrok-free.app';
+// Base API URL from environment variables
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // API endpoints
 export const API_ENDPOINTS = {
   // Auth endpoints
-  REGISTER: '/api/v1/auth/register',
-  LOGIN: '/api/v1/auth/login',
-  GET_USER: '/api/v1/auth/me',
+  REGISTER: '/api/auth/register',
+  LOGIN: '/api/auth/login',
+  GET_USER: '/api/auth/me',
   
   // Chat endpoints
   CHAT: '/api/chat',
@@ -17,10 +17,17 @@ export const API_ENDPOINTS = {
   NEWS: '/api/news',
   
   // Wealth management
-  WEALTH_MANAGEMENT: '/api/wealth-management',
+  WEALTH_MANAGEMENT: '/api/wealth/advice',
   
   // Feedback endpoint
-  FEEDBACK: '/api/v1/feedback',
+  FEEDBACK: '/api/feedback',
+  
+  // Portfolios endpoints
+  PORTFOLIOS: '/api/portfolios',
+  LATEST_PORTFOLIO: '/api/portfolios?current=true',
+  
+  // Market data
+  MARKET_DATA: '/api/market-data',
 };
 
 // Interface for API response

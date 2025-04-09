@@ -12,11 +12,7 @@ from app.services.feedback_service import (
 from app.dependencies.auth import get_current_user
 from app.database.models import User
 
-router = APIRouter(
-    prefix="/feedback",
-    tags=["Feedback"],
-    responses={404: {"description": "Not found"}},
-)
+router = APIRouter()
 
 @router.post("", response_model=FeedbackResponse, status_code=status.HTTP_201_CREATED)
 async def submit_feedback(

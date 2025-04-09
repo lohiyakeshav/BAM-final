@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import List, Dict, Optional, Union, Any
 from datetime import datetime
 
@@ -46,10 +46,23 @@ class RiskAnalysis(BaseModel):
     risk_mitigation_strategies: List[str] = Field(default_factory=list)
 
 class MarketAnalysis(BaseModel):
-    market_trends: Dict[str, Any] = Field(default_factory=dict)
-    key_insights: Dict[str, Any] = Field(default_factory=dict)
-    impact_analysis: Dict[str, Any] = Field(default_factory=dict)
+    # Allow both list and dictionary for flexibility
+    market_trends: Union[List[str], Dict[str, Any]] = Field(default_factory=list)
+    key_insights: Union[List[str], Dict[str, Any]] = Field(default_factory=list)
+    impact_analysis: Union[List[str], Dict[str, Any]] = Field(default_factory=list)
     sector_performance: Dict[str, str] = Field(default_factory=dict)
+    
+    # Validator to handle both formats
+    @root_validator(pre=True)
+    def ensure_proper_types(cls, values):
+        # Convert list to dict if needed for compatibility
+        for field in ['market_trends', 'key_insights', 'impact_analysis']:
+            if field in values and isinstance(values[field], list):
+                # If it's a list, keep it as is now that we support both formats
+                pass
+            elif field in values and values[field] is None:
+                values[field] = []
+        return values
 
 class InvestmentRecommendation(BaseModel):
     asset_allocation: Dict[str, float]
@@ -71,5 +84,7 @@ class WealthManagementResponse(BaseModel):
 class ChatResponse(BaseModel):
     """Response model for financial chat service"""
     answer: str
-    sources: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list, description="Actionable recommendations based on the analysis")
+    supporting_data: List[str] = Field(default_factory=list, description="Supporting data points for the recommendations")
+    sources: List[str] = Field(default_factory=list, description="Sources of information used in the analysis")
     timestamp: datetime = Field(default_factory=datetime.now) 

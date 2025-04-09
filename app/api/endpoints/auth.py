@@ -7,11 +7,7 @@ from app.services.auth_service import register_user, authenticate_user, get_user
 from app.dependencies.auth import get_current_user
 from app.database.models import User
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"],
-    responses={404: {"description": "Not found"}},
-)
+router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: UserCreate, db: Session = Depends(get_db)):

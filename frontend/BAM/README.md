@@ -37,7 +37,18 @@ Access the application at `http://localhost:3000`
 
 ## Configuration
 
-By default, the application connects to the backend API at `http://localhost:8000`. To change this, you can set the `VITE_API_URL` environment variable before building the application.
+The application uses environment variables for configuration. Create a `.env` file in the root of the frontend directory with the following variables:
+
+```
+# API Configuration
+VITE_API_URL=http://localhost:8000
+VITE_FINANCE_API_URL=https://query1.finance.yahoo.com/v8/finance
+```
+
+- `VITE_API_URL`: Base URL for the backend API
+- `VITE_FINANCE_API_URL`: Base URL for the Yahoo Finance API
+
+You can modify these values to point to different API endpoints as needed.
 
 ## Build for Production
 

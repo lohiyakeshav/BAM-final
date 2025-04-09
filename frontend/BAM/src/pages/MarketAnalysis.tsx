@@ -47,31 +47,18 @@ export default function MarketAnalysis() {
     }
     
     try {
-      // Use your friend's ngrok URL directly, without going through the interstitial page
-      const baseUrl = 'https://7e3d-14-97-189-166.ngrok-free.app/api/news';
-      const url = searchQuery ? `${baseUrl}?query=${encodeURIComponent(searchQuery)}` : baseUrl;
+      // Use the apiRequest utility with proper endpoints
+      const response = await apiRequest<NewsArticleCollection>(
+        searchQuery ? `${API_ENDPOINTS.NEWS}?query=${encodeURIComponent(searchQuery)}` : API_ENDPOINTS.NEWS,
+        'GET'
+      );
       
-      console.log(`📡 Sending request to API endpoint: ${url}`);
-      
-      // Get auth token if it exists
-      const token = localStorage.getItem('auth_token');
-      
-      // Make a direct request to the ngrok URL with specific headers to bypass the warning
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true', // This is important to bypass the ngrok warning
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
-      });
-      
-      if (!response.ok) {
-        console.error(`❌ API request failed with status: ${response.status}`);
-        throw new Error(`Failed to fetch news: ${response.status} ${response.statusText}`);
+      if (response.error || !response.data) {
+        console.error(`❌ API request failed with error: ${response.error}`);
+        throw new Error(`Failed to fetch news: ${response.error}`);
       }
       
-      const data = await response.json();
+      const data = response.data;
       console.log(`✅ Successfully retrieved data from API:`, data);
       
       // Fallback to using the IndianFinanceNewsTools Python function result if no articles

@@ -4,8 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserProfile } from "@/lib/services/aiService";
 import { Slider } from "@/components/ui/slider";
+
+// Updated profile interface
+export interface UserProfile {
+  riskAppetite: 'Conservative' | 'Moderate' | 'Aggressive';
+  investmentHorizon: string | number;
+  incomeLevel: number;
+  age?: number;
+  monthlyInvestment?: string | number;
+}
 
 interface ProfileFormProps {
   onSubmit: (profile: UserProfile) => void;
@@ -17,6 +25,8 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
     riskAppetite: 'Moderate',
     investmentHorizon: 5,
     incomeLevel: 1000000,
+    age: 30,
+    monthlyInvestment: 10000,
   });
 
   const handleRiskChange = (value: string) => {
@@ -43,6 +53,26 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
     }
   };
 
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value)) {
+      setProfile({
+        ...profile,
+        age: value,
+      });
+    }
+  };
+
+  const handleMonthlyInvestmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setProfile({
+        ...profile,
+        monthlyInvestment: value,
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(profile);
@@ -58,6 +88,23 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Age */}
+          <div className="space-y-2">
+            <Label htmlFor="age">Age</Label>
+            <Input
+              id="age"
+              type="number"
+              min={18}
+              max={100}
+              value={profile.age}
+              onChange={handleAgeChange}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Your age helps us tailor recommendations to your life stage
+            </p>
+          </div>
+
           {/* Risk Appetite */}
           <div className="space-y-2">
             <Label htmlFor="risk-appetite">Risk Appetite</Label>
@@ -89,7 +136,7 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
               min={1}
               max={20}
               step={1}
-              value={[profile.investmentHorizon]}
+              value={[typeof profile.investmentHorizon === 'string' ? parseInt(profile.investmentHorizon) : profile.investmentHorizon]}
               onValueChange={handleHorizonChange}
             />
             <div className="flex justify-between text-sm text-muted-foreground">
@@ -108,9 +155,27 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
               step={100000}
               value={profile.incomeLevel}
               onChange={handleIncomeChange}
+              required
             />
             <p className="text-sm text-muted-foreground">
               Your annual income helps us tailor recommendations to your financial situation
+            </p>
+          </div>
+
+          {/* Monthly Investment */}
+          <div className="space-y-2">
+            <Label htmlFor="monthly-investment">Monthly Investment (₹)</Label>
+            <Input
+              id="monthly-investment"
+              type="number"
+              min={1000}
+              step={1000}
+              value={profile.monthlyInvestment}
+              onChange={handleMonthlyInvestmentChange}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              How much you plan to invest each month
             </p>
           </div>
 
