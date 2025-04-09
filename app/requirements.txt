@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+crewai
+beautifulsoup4
+requests
+aiohttp
+pandas
+numpy
+passlib
+bcrypt
+sqlalchemy
+alembic
+httpx 
+python-multipart
+python-jose[cryptography]

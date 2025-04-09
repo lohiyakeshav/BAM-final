@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+Here’s a comprehensive list of the **best coding, frontend, and security practices** you should follow:  
+
+
+### 🔹 **General Best Coding Practices**
+1. **Write Clean & Readable Code**: Use meaningful variable names, proper indentation, and consistent formatting.
+2. **Follow DRY (Don't Repeat Yourself)**: Reuse functions, components, and utilities to avoid duplication.
+3. **Follow KISS (Keep It Simple, Stupid)**: Avoid unnecessary complexity; keep code simple and understandable.
+4. **SOLID Principles (For OOP)**:
+   - **S**ingle Responsibility  
+   - **O**pen-Closed  
+   - **L**iskov Substitution  
+   - **I**nterface Segregation  
+   - **D**ependency Inversion  
+5. **Write Modular Code**: Break logic into small reusable functions and components.
+6. **Use Version Control (Git)**: Commit often, use meaningful commit messages, and follow Git best practices.
+7. **Write Tests**: Unit tests (Jest, Mocha), integration tests, and end-to-end tests (Cypress, Playwright).
+8. **Handle Errors Properly**: Use `try-catch`, avoid swallowing errors, and log errors effectively.
+9. **Avoid Hardcoding Values**: Use configuration files or environment variables (`.env`).
+10. **Optimize Performance**: Avoid unnecessary computations, optimize loops, and reduce memory usage.
+
+---
+
+### 🎨 **Frontend Best Practices**
+1. **Follow Component-Based Architecture**: Use reusable components in React, Vue, or Angular.
+2. **State Management**: Use proper state management (React Query, Redux, Zustand, Vuex, Pinia).
+3. **Optimize Rendering**: Use `useMemo` / `useCallback` in React to avoid unnecessary re-renders.
+4. **Lazy Loading**: Load images and heavy resources only when needed.
+5. **Code Splitting**: Use dynamic imports (`import()`) to load JavaScript only when required.
+6. **Responsive Design**: Ensure your UI works on different screen sizes using Tailwind, Flexbox, Grid.
+7. **Accessibility (a11y)**: Use semantic HTML, ARIA attributes, and test with screen readers.
+8. **SEO Optimization**: Use proper meta tags, alt attributes, and structured data (`JSON-LD`).
+9. **Use a Design System**: Follow a consistent design with UI libraries (Material UI, ShadCN, Chakra UI).
+10. **Optimize Images & Assets**: Use modern formats (WebP, AVIF) and compression (TinyPNG, ImageOptim).
+11. **Use Proper HTTP Status Codes**: Ensure correct responses from APIs (200 OK, 400 Bad Request, 500 Server Error).
+12. **Secure Forms & Inputs**: Validate all user inputs on both frontend and backend.
+13. **CORS Handling**: Properly configure CORS policies to prevent unauthorized requests.
+
+---
+
+### 🔒 **Security Best Practices**
+#### **1️⃣ Authentication & Authorization**
+- Use **OAuth2, JWT**, or **OpenID Connect** instead of storing passwords.
+- Implement **role-based access control (RBAC)** and **principle of least privilege**.
+- Enforce **multi-factor authentication (MFA)** for sensitive actions.
+- Securely store passwords using **bcrypt / Argon2** (never store plain text passwords).
+
+#### **2️⃣ Input Validation & Sanitization**
+- Validate and sanitize **all user inputs** to prevent **SQL Injection & XSS**.
+- Use **allowlists** instead of blacklists for input validation.
+- Escape output to prevent **HTML/JS injection attacks**.
+
+#### **3️⃣ API Security**
+- Use **HTTPS** (SSL/TLS) to encrypt all communications.
+- Implement **rate limiting** and **API throttling** to prevent abuse (e.g., Nginx, Cloudflare, Express-rate-limit).
+- Restrict API access using **API keys** or **JWT authentication**.
+- Use **content security policies (CSP)** to prevent **Cross-Site Scripting (XSS)**.
+
+#### **4️⃣ Secure Data Handling**
+- Encrypt **sensitive data** at rest and in transit (AES-256, RSA, TLS 1.2+).
+- Never expose **sensitive data** in URLs or client-side storage (LocalStorage, SessionStorage).
+- Regularly audit **third-party dependencies** for vulnerabilities (use `npm audit`, `yarn audit`, `Snyk`).
+
+#### **5️⃣ Protect Against Common Attacks**
+- **SQL Injection**: Use prepared statements (`parameterized queries`).
+- **Cross-Site Scripting (XSS)**: Escape user inputs and use a strict Content Security Policy (CSP).
+- **Cross-Site Request Forgery (CSRF)**: Use CSRF tokens or **SameSite cookies**.
+- **Clickjacking**: Use `X-Frame-Options: DENY`.
+- **DDoS Protection**: Use WAF (Web Application Firewall) and rate limiting.
+
+#### **6️⃣ Secure DevOps & Deployment**
+- **Use Environment Variables (`.env`)**: Never hardcode secrets in your code.
+- **Enable Logging & Monitoring**: Use tools like Prometheus, Loki, Datadog, or ELK Stack.
+- **Regularly Patch & Update Dependencies**: Keep libraries up to date.
+- **Automate Security Scans**: Use **SAST (Static Analysis Security Testing)** tools like SonarQube.
+
+---
+
+### 🚀 **Performance & Optimization Best Practices**
+1. **Minify & Bundle JavaScript/CSS**: Use Webpack, Vite, or Parcel.
+2. **Reduce HTTP Requests**: Use a Content Delivery Network (CDN).
+3. **Use Lazy Loading & Prefetching**: Optimize loading strategies for faster UX.
+4. **Database Optimization**:
+   - Use **indexes** for faster queries.
+   - Normalize and denormalize data when appropriate.
+   - Use **caching** (Redis, Memcached) for frequent queries.
+5. **Optimize API Calls**:
+   - Use pagination for large datasets.
+   - Implement GraphQL or optimized REST API queries.
+   - Use WebSockets for real-time updates instead of polling.
+

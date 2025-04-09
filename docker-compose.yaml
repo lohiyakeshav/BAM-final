@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - ALLOWED_ORIGINS=http://localhost:3000
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./app:/app
+    # Add any environment variables needed from .env file
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: ./frontend/BAM
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://backend:8000
+
+networks:
+  app-network:
+    driver: bridge 
