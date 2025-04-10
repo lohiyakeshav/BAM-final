@@ -35,6 +35,12 @@ interface InvestmentReport {
   assetAllocation: Record<string, number>;
   performanceProjections: any[];
   recommendations: string[];
+  marketAnalysis?: {
+    market_trends: string[];
+    key_insights: string[];
+    impact_analysis: string[];
+    sector_performance: Record<string, string>;
+  };
   // For backward compatibility
   investment_horizon?: number;
   income_level?: number;
@@ -147,10 +153,11 @@ export default function InvestmentReportView({ report }: InvestmentReportViewPro
         <Separator />
         
         <Tabs defaultValue="allocation" onValueChange={setActiveTab} value={activeTab}>
-          <TabsList className="grid grid-cols-3">
+          <TabsList className="grid grid-cols-4">
             <TabsTrigger value="allocation">Asset Allocation</TabsTrigger>
             <TabsTrigger value="projection">Performance Projection</TabsTrigger>
             <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
+            <TabsTrigger value="market">Market Analysis</TabsTrigger>
           </TabsList>
           
           <TabsContent value="allocation" className="py-4">
@@ -289,6 +296,59 @@ export default function InvestmentReportView({ report }: InvestmentReportViewPro
                   </div>
                 )}
               </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="market" className="py-4">
+            <div className="space-y-6">
+              {report.marketAnalysis && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-medium mb-2">Market Trends</h3>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {report.marketAnalysis.market_trends.map((trend, index) => (
+                            <li key={index}>{trend}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium mb-2">Key Insights</h3>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {report.marketAnalysis.key_insights.map((insight, index) => (
+                            <li key={index}>{insight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-medium mb-2">Impact Analysis</h3>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {report.marketAnalysis.impact_analysis.map((impact, index) => (
+                            <li key={index}>{impact}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium mb-2">Sector Performance</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          {Object.entries(report.marketAnalysis.sector_performance).map(([sector, performance], index) => (
+                            <div key={index} className="p-3 rounded-lg border">
+                              <h4 className="font-medium capitalize">{sector}</h4>
+                              <p className="text-sm text-muted-foreground capitalize">{performance}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </TabsContent>
         </Tabs>

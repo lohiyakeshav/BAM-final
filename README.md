@@ -25,6 +25,7 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory with:
 ```
 GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=your_db_url
 ```
 
 4. Start the FastAPI server:
@@ -47,6 +48,7 @@ npm run dev
 Create a `.env` file in the root directory with:
 ```
 GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=your_db_url
 # Add any other required environment variables
 ```
 

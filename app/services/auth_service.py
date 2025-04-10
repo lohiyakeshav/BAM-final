@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from app.database.models import User
 from app.schemas.auth import UserCreate, UserLogin
 from app.utils.auth import get_password_hash, verify_password, create_access_token
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 def register_user(db: Session, user: UserCreate):
     """Register a new user"""
@@ -31,7 +31,8 @@ def register_user(db: Session, user: UserCreate):
     db_user = User(
         username=user.username,
         email=user.email,
-        password=hashed_password
+        password=hashed_password,
+        created_at=datetime.now()  # Explicitly set created_at
     )
     
     try:
